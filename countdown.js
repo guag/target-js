@@ -1,21 +1,20 @@
-function Countdown() {
-
-    var _elem, // Target element to update
+$(function () {
+    var _selector, // Target element to update
         _targetDate = [2030, 1, 1], // Default date
         _showYears = false, // Hide years by default
         _showMonths = true,
         _showDays = true,
         _showHours = true,
         _showMinutes = true,
-        _showSeconds = true;
+        _showSeconds = true,
+        _separator = ", ";
 
-    function start(elem, date, options) {
-
-        if (!elem) {
-            // 'elem' is required
+    function start (selector, date, options) {
+        if (!selector) {
+            // 'selector' is required
             return false;
         }
-        _elem = elem;
+        _selector = selector;
 
         if (date) {
             _targetDate = date;
@@ -40,22 +39,25 @@ function Countdown() {
             if (options.seconds !== undefined) {
                 _showSeconds = options.seconds;
             }
+            if (options.separator !== undefined) {
+                _separator = options.separator;
+            }
         }
 
         // Explicity call countdown here so that there isn't
         // a 1 sec delay of nothing before setInterval() executes.
-        countdown();
+        _countdown();
         // Now we'll call countdown every second.
-        setInterval(countdown, 1000);
+        setInterval(_countdown, 1000);
     }
 
-    return {
+    return countdown = {
         start: start
     };
 
     // Internal members
 
-    function countdown() {
+    function _countdown() {
         var now = moment(), // get the current moment
             then = moment(_targetDate),
             // get the difference from now to then in ms
@@ -66,53 +68,55 @@ function Countdown() {
             hours,
             minutes,
             seconds,
-            result = '';
+            result = "";
 
+        // Add the years, months, days, etc. where applicable
         if (_showYears) {
             years = getYears(ms);
-            result += '<span class="num">' + years + '</span> years<br />';
-            then = then.subtract('years', years);
+            result += years + " years" + _separator;
+            then = then.subtract("years", years);
             ms = diffInMS(then, now);
         }
 
         if (_showMonths) {
             months = getMonths(ms);
-            result += '<span class="num">' + months + '</span> months<br />';
+            result += months + " months" + _separator;
             // Not sure why I had to offset by 1 day
-            then = then.subtract('months', months).subtract('days', 1);
+            then = then.subtract("months", months).subtract("days", 1);
             ms = diffInMS(then, now);
         }
 
         if (_showDays) {
             days = getDays(ms);
-            result += '<span class="num">' + days + '</span> days<br />';
-            then = then.subtract('days', days);
+            result += days + " days" + _separator;
+            then = then.subtract("days", days);
             ms = diffInMS(then, now);
         }
 
         if (_showHours) {
             hours = getHours(ms);
-            result += '<span class="num">' + hours + '</span> hours<br />';
-            then = then.subtract('hours', hours);
+            result += hours + " hours" + _separator;
+            then = then.subtract("hours", hours);
             ms = diffInMS(then, now);
         }
 
         if (_showMinutes) {
             minutes = getMinutes(ms);
-            result += '<span class="num">' + minutes + '</span> minutes<br />';
-            then = then.subtract('minutes', minutes);
+            result += minutes + " minutes" + _separator;
+            then = then.subtract("minutes", minutes);
             ms = diffInMS(then, now);
         }
 
         if (_showSeconds) {
-            result += '<span class="num">' + getSeconds(ms) + '</span> seconds';
+            result += getSeconds(ms) + " seconds";
         }
 
-        $(_elem).html(result);
+        // The moment we've all been waiting for... no pun intended.
+        $(_selector).html(result);
     }
 
     function diffInMS(then, now) {
-        return then.diff(now, 'milliseconds', true);
+        return then.diff(now, "milliseconds", true);
     }
 
     function getYears(ms) {
@@ -138,4 +142,4 @@ function Countdown() {
     function getSeconds(ms) {
         return Math.floor(moment.duration(ms).asSeconds());
     }
-}
+});
