@@ -81,8 +81,7 @@ $(function () {
         if (_showMonths) {
             months = getMonths(ms);
             result += months + " months" + _separator;
-            // Not sure why I had to offset by 1 day
-            then = then.subtract("months", months).subtract("days", 1);
+            then = then.subtract("months", months);
             ms = diffInMS(then, now);
         }
 
