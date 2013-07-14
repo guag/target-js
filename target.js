@@ -1,7 +1,7 @@
 $(function () {
     var _selector, // Target element to update
-        _targetDate = [2030, 1, 1], // Default date
-        _showYears = false, // Hide years by default
+		_targetDate, // Target date in the future
+		_showYears = false, // Hide years by default
         _showMonths = true,
         _showDays = true,
         _showHours = true,
@@ -11,35 +11,40 @@ $(function () {
         _now,
         _then,
         _ms;
+    var timeLeft = (typeof ko !== "undefined") ? ko.observable("") : null;
 
-    function countdown() {
-        if (arguments.length === 0) {
-            // My hair is a bird, your argument is invalid.
-            return false;
+    // Supported function signatures:
+    //   countdown(targetDate : array);
+    //   countdown(targetDate : array, options : object);
+    //   countdown(targetDate : array, selector : string, options : object);
+    function countdown(targetDate) {
+        _targetDate = targetDate;
+        // Parse the 2nd argument (optional)
+        var a2 = arguments[1];
+        if (a2) {
+            if (typeof a2 == "string") {
+                _selector = a2; // Arg 2 is a selector
+            } else {
+                setOptions(a2); // Arg 2 is an options object
+            }
         }
-        if (arguments.length === 1) {
-            // A single argument presumably consisting of an options object.
-            setOptions(arguments[0]);
-        }
-        if (arguments.length > 1) {
-            _selector = arguments[0]; // DOM element selector.
-            _targetDate = arguments[1]; // Target date in the future.
-        }
-        if (arguments.length > 2) {
-            // If there is a third argument, it would be an options object.
-            setOptions(arguments[2]);
-        }
+        // Parse the 3rd argument (optional)
+        setOptions(arguments[2]);
 
         // Explicity call countdown here so that there isn't
         // a 1 sec delay of nothing before setInterval() executes.
-        _countdown();
+        countdownInner();
         // Now we'll call countdown every second.
-        setInterval(_countdown, 1000);
+        setInterval(countdownInner, 1000);
     }
 
-    return target = {
-        countdown: countdown
+    // Public members
+
+    var target = {
+        countdown: countdown,
+        timeLeft: timeLeft
     };
+    return target;
 
     // Internal members
 
@@ -75,7 +80,7 @@ $(function () {
         }
     }
 
-    function _countdown() {
+    function countdownInner() {
         _now = moment(); // get the current moment
         _then = moment(_targetDate);
         // get the difference from now to then in ms
@@ -113,7 +118,15 @@ $(function () {
         }
 
         // The moment we've all been waiting for... no pun intended.
-        $(_selector).html(result);
+        // TODO: should we be updating both if Knockout is available?
+        if (timeLeft) {
+            // If using Knockout, update the observable.
+            timeLeft(result);
+        }
+        if (_selector) {
+            // If a selector was specified, update that element.
+            $(_selector).html(result);
+        }
     }
 
     function getUnits(unitString, getUnitsDelegate) {
